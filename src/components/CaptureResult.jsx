@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { X, Sparkles, ChevronUp } from 'lucide-react';
+import { X, Sparkles, ChevronUp, Star } from 'lucide-react';
+import { useGameFeedback } from '../hooks/useGameFeedback';
 
 const CaptureResult = ({ result, onClose }) => {
   const [points, setPoints] = useState(0);
+  const { feedbackSuccess, feedbackClick } = useGameFeedback();
 
   useEffect(() => {
+    // Play success sound and haptic when the capture result appears
+    feedbackSuccess();
+
     // Animated point counter
     const target = result.points;
-    const duration = 1000;
-    const steps = 30;
+    const duration = 1200;
+    const steps = 40;
     const stepTime = duration / steps;
     const increment = target / steps;
     
@@ -24,89 +29,106 @@ const CaptureResult = ({ result, onClose }) => {
     }, stepTime);
 
     return () => clearInterval(timer);
-  }, [result.points]);
+  }, [result.points, feedbackSuccess]);
 
   const rarityColor = `var(--rarity-${result.rarity.toLowerCase()})`;
+
+  const handleClose = () => {
+    feedbackClick();
+    onClose();
+  };
 
   return (
     <div style={{
       position: 'absolute', inset: 0, zIndex: 200, 
-      display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)'
+      display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+      background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', padding: '24px'
     }}>
-      <div className={`animate-slide-up glass-panel border-${result.rarity.toLowerCase()}`} style={{
-        height: '85%', borderBottomLeftRadius: 0, borderBottomRightRadius: 0,
-        padding: '30px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center',
-        background: 'linear-gradient(to bottom, rgba(13, 24, 30, 0.95), rgba(5, 8, 12, 1))'
+      <div className="animate-pop-in" style={{
+        width: '100%', maxWidth: '400px',
+        background: 'var(--bg-surface)',
+        borderRadius: '32px',
+        padding: '32px 24px', 
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        boxShadow: '0 24px 48px rgba(0,0,0,0.15)',
+        position: 'relative',
+        border: `4px solid ${rarityColor}`
       }}>
-        <button 
-          onClick={onClose}
-          style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
-        >
-          <X size={30} />
-        </button>
-
-        <div style={{ fontFamily: 'var(--font-display)', color: rarityColor, fontSize: '1.2rem', letterSpacing: 3, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
-          {result.rarity === 'Legendary' && <Sparkles size={16} />}
-          {result.rarity.toUpperCase()} DISCOVERY
-          {result.rarity === 'Legendary' && <Sparkles size={16} />}
+        
+        {/* Confetti or Sparkles effect placeholder */}
+        <div style={{ position: 'absolute', top: -20, color: rarityColor }}>
+          <Star size={48} fill={rarityColor} />
         </div>
 
-        <h2 style={{ fontSize: '2.5rem', textAlign: 'center', lineHeight: 1.1, marginBottom: 5 }}>
+        <button 
+          onClick={handleClose}
+          style={{ position: 'absolute', top: 20, right: 20, background: 'rgba(0,0,0,0.05)', borderRadius: '50%', padding: '6px', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'transform 0.2s' }}
+          onPointerDown={e => e.currentTarget.style.transform = 'scale(0.9)'}
+          onPointerUp={e => e.currentTarget.style.transform = 'scale(1)'}
+        >
+          <X size={24} strokeWidth={3} />
+        </button>
+
+        <div style={{ fontFamily: 'var(--font-display)', color: rarityColor, fontSize: '1.1rem', fontWeight: 800, letterSpacing: 2, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 6, marginTop: 24 }}>
+          {result.rarity === 'Legendary' && <Sparkles size={18} />}
+          {result.rarity.toUpperCase()} CATCH
+          {result.rarity === 'Legendary' && <Sparkles size={18} />}
+        </div>
+
+        <h2 style={{ fontSize: '2.5rem', textAlign: 'center', lineHeight: 1.1, marginBottom: 4, color: 'var(--text-main)', fontWeight: 900 }}>
           {result.animal.toUpperCase()}
         </h2>
-        <div style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginBottom: 20 }}>
+        <div style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginBottom: 24, fontWeight: 500 }}>
           {result.species}
         </div>
 
         {/* Image/Avatar */}
         <div style={{ 
-          width: 180, height: 180, borderRadius: '50%', marginBottom: 30,
-          border: `4px solid ${rarityColor}`, overflow: 'hidden',
-          boxShadow: `0 0 30px ${rarityColor}40`, position: 'relative'
+          width: 160, height: 160, borderRadius: '50%', marginBottom: 32,
+          border: `6px solid ${rarityColor}`, overflow: 'hidden',
+          boxShadow: `0 12px 32px ${rarityColor}40`, position: 'relative',
+          background: 'var(--bg-deep)'
         }}>
           {result.image.startsWith('data:') ? (
             <img src={result.image} alt={result.animal} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '5rem', background: 'rgba(255,255,255,0.05)' }}>
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '5rem', background: 'rgba(0,0,0,0.02)' }}>
               {result.image}
             </div>
           )}
         </div>
 
         {/* Stats Grid */}
-        <div style={{ display: 'flex', gap: 10, width: '100%', marginBottom: 30 }}>
-          <div className="glass-panel" style={{ flex: 1, padding: 15, textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'var(--font-display)', letterSpacing: 1 }}>BASE POINTS</div>
-            <div style={{ fontSize: '1.5rem', fontFamily: 'var(--font-display)', color: rarityColor }}>+{result.points_base}</div>
+        <div style={{ display: 'flex', gap: 12, width: '100%', marginBottom: 32 }}>
+          <div style={{ flex: 1, padding: '16px', textAlign: 'center', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: 1 }}>BASE XP</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: rarityColor }}>+{result.points_base}</div>
           </div>
-          <div className="glass-panel" style={{ flex: 1, padding: 15, textAlign: 'center', background: 'rgba(0,0,0,0.3)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', fontFamily: 'var(--font-display)', letterSpacing: 1 }}>BONUSES</div>
-            <div style={{ fontSize: '1.5rem', fontFamily: 'var(--font-display)', color: 'var(--neon-green)' }}>
+          <div style={{ flex: 1, padding: '16px', textAlign: 'center', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: 1 }}>BONUS</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
               {result.isFirstOfSpecies ? 'x2 FIRST!' : 'NONE'}
             </div>
           </div>
         </div>
 
         {/* Total Points Awarded */}
-        <div style={{ textAlign: 'center', marginBottom: 30 }}>
-          <div style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: 2 }}>TOTAL XP EARNED</div>
-          <div style={{ fontSize: '4rem', fontFamily: 'var(--font-display)', color: 'var(--text-main)', textShadow: '0 0 20px rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ChevronUp color="var(--neon-green)" size={40} />
+        <div style={{ textAlign: 'center', marginBottom: 24, width: '100%', background: rarityColor, padding: '24px', borderRadius: '24px', color: '#fff', boxShadow: `0 8px 24px ${rarityColor}60` }}>
+          <div style={{ fontSize: '0.8rem', fontWeight: 800, letterSpacing: 2, opacity: 0.9 }}>TOTAL XP EARNED</div>
+          <div style={{ fontSize: '4rem', fontWeight: 900, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', textShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+            <ChevronUp size={48} strokeWidth={3} />
             {points}
           </div>
           {result.levelUp && (
-            <div className="animate-slide-up" style={{ color: 'var(--neon-amber)', fontFamily: 'var(--font-display)', fontSize: '1.5rem', letterSpacing: 2, marginTop: 10, textShadow: '0 0 10px var(--neon-amber)' }}>
+            <div className="animate-pop-in" style={{ fontWeight: 900, fontSize: '1.5rem', letterSpacing: 2, marginTop: 8, background: '#fff', color: rarityColor, padding: '4px 12px', borderRadius: '12px', display: 'inline-block' }}>
               LEVEL UP!
             </div>
           )}
         </div>
 
-        {/* Fun Fact */}
-        <div className="glass-panel" style={{ padding: '15px 20px', width: '100%', borderLeft: `4px solid ${rarityColor}` }}>
-          <div style={{ fontSize: '0.8rem', color: rarityColor, fontFamily: 'var(--font-display)', marginBottom: 5 }}>FIELD NOTES</div>
-          <p style={{ fontSize: '0.9rem', lineHeight: 1.4 }}>"{result.fun_fact}"</p>
-        </div>
+        <button className="btn-3d btn-3d-primary btn-pill" style={{ width: '100%', padding: '20px' }} onClick={handleClose}>
+          CONTINUE
+        </button>
 
       </div>
     </div>

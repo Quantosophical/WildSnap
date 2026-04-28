@@ -1,78 +1,87 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Map, Trophy, ArrowRight } from 'lucide-react';
+import { Play, Sparkles } from 'lucide-react';
+import { supabase } from '../utils/supabase';
+import { useGameFeedback } from '../hooks/useGameFeedback';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const { feedbackClick } = useGameFeedback();
+
+  useEffect(() => {
+    // Auto-login: if session exists, go straight to dashboard
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate('/app');
+      }
+    };
+    checkSession();
+  }, [navigate]);
+
+  const handleStart = () => {
+    feedbackClick();
+    navigate('/auth');
+  };
 
   return (
-    <div className="app-container">
-      <canvas id="particle-canvas" />
+    <div className="app-container" style={{
+      background: 'radial-gradient(circle at center, #38bdf8 0%, #0ea5e9 100%)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+    }}>
       
-      <div className="content-area" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-        <div className="animate-slide-up" style={{ textAlign: 'center', zIndex: 10, width: '100%', maxWidth: '340px' }}>
-          <h1 className="text-gradient" style={{ 
-            fontSize: '4.5rem', 
+      {/* Background Decorative Elements */}
+      <div className="animate-float" style={{ position: 'absolute', top: '15%', left: '10%', opacity: 0.5 }}>
+        <Sparkles size={64} color="white" />
+      </div>
+      <div className="animate-float" style={{ position: 'absolute', top: '25%', right: '15%', opacity: 0.3, animationDelay: '1s' }}>
+        <Sparkles size={48} color="white" />
+      </div>
+
+      <div className="content-area animate-pop-in" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%', paddingBottom: '0' }}>
+        
+        {/* Massive Logo Area */}
+        <div style={{ textAlign: 'center', marginBottom: '80px', position: 'relative' }}>
+          <h1 style={{ 
+            fontSize: '5rem', 
             fontFamily: 'var(--font-display)',
-            fontWeight: 800,
+            fontWeight: 900,
             lineHeight: 1,
-            marginBottom: '16px',
-            letterSpacing: '-0.02em'
+            color: 'white',
+            textShadow: '0 12px 32px rgba(0,0,0,0.2)',
+            letterSpacing: '-0.02em',
+            transform: 'rotate(-2deg)'
           }}>
-            WILDSNAP
+            WILD
+            <br/>
+            <span style={{ color: 'var(--accent-tertiary)' }}>SNAP</span>
           </h1>
-          <p className="text-muted text-sm" style={{ fontWeight: 600, letterSpacing: '0.1em', marginBottom: '48px' }}>
+          <div style={{
+            background: 'white', color: 'var(--accent-secondary)', padding: '8px 24px',
+            borderRadius: '24px', fontWeight: 900, fontSize: '0.9rem', marginTop: '16px',
+            display: 'inline-block', boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
+            transform: 'rotate(2deg)'
+          }}>
             THE WORLD IS YOUR POKÉDEX
-          </p>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '48px' }}>
-            <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Camera color="var(--accent-primary)" size={24} />
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', marginBottom: '2px' }}>SNAP WILDLIFE</div>
-                <div className="text-xs text-muted" style={{ lineHeight: 1.4 }}>AI instantly identifies species & rarity.</div>
-              </div>
-            </div>
-            
-            <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(14, 165, 233, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Map color="var(--accent-secondary)" size={24} />
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', marginBottom: '2px' }}>BUILD A COLLECTION</div>
-                <div className="text-xs text-muted" style={{ lineHeight: 1.4 }}>Curate your field journal anywhere.</div>
-              </div>
-            </div>
-
-            <div className="glass-panel" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Trophy color="var(--rarity-epic)" size={24} />
-              </div>
-              <div style={{ textAlign: 'left' }}>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', marginBottom: '2px' }}>CLIMB THE RANKS</div>
-                <div className="text-xs text-muted" style={{ lineHeight: 1.4 }}>Compete globally for top XP.</div>
-              </div>
-            </div>
           </div>
+        </div>
 
+        {/* Floating Giant CTA Button */}
+        <div style={{ position: 'absolute', bottom: '15%' }} className="animate-float">
           <button 
-            onClick={() => navigate('/auth')}
-            style={{
-              width: '100%', padding: '20px', borderRadius: '32px', 
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-secondary))',
-              color: '#fff', fontWeight: 700, border: 'none', fontFamily: 'var(--font-display)',
-              fontSize: '1.25rem', cursor: 'pointer', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            onClick={handleStart}
+            className="btn-3d btn-3d-tertiary btn-circle"
+            style={{ 
+              width: '120px', height: '120px', 
+              background: 'var(--accent-tertiary)',
+              boxShadow: '0 12px 0 var(--accent-tertiary-dark), 0 24px 48px rgba(0,0,0,0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
-            onPointerDown={e => { e.currentTarget.style.transform = 'scale(0.98)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(16, 185, 129, 0.2)'; }}
-            onPointerUp={e => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 8px 24px rgba(16, 185, 129, 0.3)'; }}
           >
-            START HUNTING <ArrowRight size={24} strokeWidth={2.5} />
+            <Play size={48} color="white" fill="white" style={{ marginLeft: '8px' }} />
           </button>
         </div>
+
       </div>
     </div>
   );

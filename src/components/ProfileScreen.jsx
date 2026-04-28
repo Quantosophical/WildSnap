@@ -1,7 +1,10 @@
 import React from 'react';
 import { Share2, Award, Flame, Star, Camera, LogOut } from 'lucide-react';
+import { useGameFeedback } from '../hooks/useGameFeedback';
 
 const ProfileScreen = ({ gameState, onLogout }) => {
+  const { feedbackClick } = useGameFeedback();
+  
   // Stats calculations
   const totalCaptures = gameState.captures.length;
   
@@ -36,7 +39,7 @@ const ProfileScreen = ({ gameState, onLogout }) => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
         <h1 className="heading-xl text-gradient">PROFILE</h1>
         <div style={{ display: 'flex', gap: '16px' }}>
-          <button style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'color 0.2s' }}>
+          <button onClick={feedbackClick} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', transition: 'color 0.2s' }}>
             <Share2 size={24} />
           </button>
           <button onClick={onLogout} style={{ background: 'none', border: 'none', color: 'var(--rarity-legendary)', cursor: 'pointer', transition: 'transform 0.2s' }} onPointerDown={e => e.currentTarget.style.transform='scale(0.9)'} onPointerUp={e => e.currentTarget.style.transform='scale(1)'}>

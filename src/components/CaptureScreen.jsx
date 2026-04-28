@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { Camera, AlertTriangle, X } from 'lucide-react';
 import { identifyAnimal } from '../utils/api';
 import { triggerParticleBurst } from '../utils/particles';
-import { playSound } from '../utils/audio';
+import { useGameFeedback } from '../hooks/useGameFeedback';
 import CaptureResult from './CaptureResult';
 import { supabase } from '../utils/supabase';
 
@@ -15,6 +15,8 @@ const CaptureScreen = ({ gameState }) => {
   const [error, setError] = useState('');
   const [flash, setFlash] = useState(false);
   const [stream, setStream] = useState(null);
+  
+  const { feedbackClick, triggerHaptic } = useGameFeedback();
 
   useEffect(() => {
     startCamera();
@@ -63,7 +65,7 @@ const CaptureScreen = ({ gameState }) => {
     if (!videoRef.current || isScanning) return;
     
     setFlash(true);
-    playSound('snap');
+    feedbackClick();
     setTimeout(() => setFlash(false), 400);
 
     const video = videoRef.current;
@@ -84,15 +86,31 @@ const CaptureScreen = ({ gameState }) => {
       if (data.detected) {
         if (data.zoo_detected) {
           setIsScanning(false);
-          playSound('reject');
+          triggerHaptic('heavy');
           setError(`ZOO DETECTED: ${data.zoo_reason}. Captive animals do not count.`);
-        } else {
-          const imageUrl = await uploadImage(base64Image);
+          return;
+        } 
+        
+        // --- NEW LOGIC: Prevent duplicate species ---
+        const alreadyCaptured = gameState.captures.some(
+          c => c.species.toLowerCase() === data.species.toLowerCase()
+        );
+
+        if (alreadyCaptured) {
           setIsScanning(false);
-          handleSuccess(data, imageUrl);
+          triggerHaptic('heavy');
+          setError(`Already documented the ${data.species}! Find a new species.`);
+          return;
         }
+
+        // Proceed if new species
+        const imageUrl = await uploadImage(base64Image);
+        setIsScanning(false);
+        handleSuccess(data, imageUrl);
+        
       } else {
         setIsScanning(false);
+        triggerHaptic('heavy');
         setError("No animal detected. Get closer and ensure good lighting.");
       }
     } catch (err) {
@@ -102,9 +120,6 @@ const CaptureScreen = ({ gameState }) => {
   };
 
   const handleSuccess = async (data, imageUrl) => {
-    if (data.rarity === 'Legendary') playSound('legendary');
-    else playSound('success');
-    
     triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, data.rarity);
     
     const finalCaptureData = await gameState.addCapture({
@@ -136,56 +151,55 @@ const CaptureScreen = ({ gameState }) => {
           
           {/* Top Bar */}
           <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div className="glass-panel" style={{ padding: '8px 16px', borderRadius: '20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
-              <span className="text-xs" style={{ fontWeight: 600, letterSpacing: '0.05em' }}>AR ACTIVE</span>
+            <div className="blob-panel" style={{ padding: '12px 20px', borderRadius: '50px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: 'var(--accent-primary)', boxShadow: '0 0 10px var(--accent-primary)' }} />
+              <span style={{ fontWeight: 900, letterSpacing: '0.05em', color: 'var(--text-main)', fontSize: '0.85rem' }}>AR ACTIVE</span>
             </div>
-            <div className="glass-panel text-sm" style={{ padding: '8px 16px', borderRadius: '20px', fontWeight: 700 }}>
+            <div className="blob-panel" style={{ padding: '12px 20px', borderRadius: '50px', fontWeight: 900, color: 'var(--text-main)', fontSize: '0.9rem' }}>
               LVL {gameState.level}
             </div>
           </div>
 
           {/* Center AR Reticle */}
-          <div className={`ar-reticle ${isScanning ? 'scanning' : ''}`} />
+          <div className={`ar-reticle ${isScanning ? 'scanning' : ''}`} style={{ borderRadius: isScanning ? '50%' : '40px' }} />
 
           {/* Error Toast */}
           {error && (
             <div style={{ position: 'absolute', top: '100px', left: '20px', right: '20px', pointerEvents: 'auto' }}>
-              <div className="glass-panel animate-slide-up" style={{ 
-                background: 'rgba(244, 63, 94, 0.1)', border: '1px solid var(--rarity-legendary)',
-                padding: '16px', display: 'flex', gap: '12px', alignItems: 'flex-start', borderRadius: '16px'
+              <div className="blob-panel animate-pop-in" style={{ 
+                border: '4px solid var(--rarity-legendary)',
+                padding: '20px', display: 'flex', gap: '16px', alignItems: 'flex-start',
+                boxShadow: '0 12px 32px rgba(244,63,94,0.2)'
               }}>
-                <AlertTriangle color="var(--rarity-legendary)" size={20} style={{ flexShrink: 0, marginTop: '2px' }} />
-                <div style={{ flex: 1, fontSize: '0.9rem', color: '#f8fafc' }}>{error}</div>
-                <button onClick={() => setError('')} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
-                  <X size={20} />
+                <AlertTriangle color="var(--rarity-legendary)" size={28} style={{ flexShrink: 0 }} />
+                <div style={{ flex: 1, fontSize: '1rem', color: 'var(--text-main)', fontWeight: 800 }}>{error}</div>
+                <button onClick={() => { feedbackClick(); setError(''); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                  <X size={24} strokeWidth={3} />
                 </button>
               </div>
             </div>
           )}
 
-          {/* Bottom Controls */}
+          {/* Bottom Controls - Massive 3D Shutter */}
           <div style={{ marginTop: 'auto', paddingBottom: '120px', display: 'flex', justifyContent: 'center', pointerEvents: 'auto' }}>
             {isScanning ? (
-              <div className="glass-panel" style={{ padding: '20px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', borderRadius: '32px' }}>
+              <div className="blob-panel animate-pop-in" style={{ padding: '24px 48px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', borderRadius: '50px' }}>
                 <div className="spinner" />
-                <div className="text-xs" style={{ color: 'var(--text-muted)', letterSpacing: '0.1em', fontWeight: 600 }}>ANALYZING...</div>
+                <div style={{ color: 'var(--text-main)', letterSpacing: '0.1em', fontWeight: 900, fontSize: '1.2rem' }}>ANALYZING...</div>
               </div>
             ) : (
               <button 
                 onClick={handleCapture}
+                className="btn-3d btn-circle"
                 style={{
-                  width: '80px', height: '80px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.1)', border: '3px solid white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  cursor: 'pointer', outline: 'none', padding: '4px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)', backdropFilter: 'blur(10px)',
-                  transition: 'transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+                  width: '100px', height: '100px',
+                  background: 'white',
+                  border: '8px solid rgba(255,255,255,0.4)',
+                  backgroundClip: 'padding-box',
+                  boxShadow: '0 12px 0 rgba(0,0,0,0.2), 0 24px 48px rgba(0,0,0,0.3)',
                 }}
-                onPointerDown={(e) => e.currentTarget.style.transform = 'scale(0.92)'}
-                onPointerUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
               >
-                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'white' }} />
+                <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: 'var(--accent-primary)', border: '4px solid white', boxShadow: 'inset 0 4px 10px rgba(0,0,0,0.2)' }} />
               </button>
             )}
           </div>

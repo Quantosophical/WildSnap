@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, BookOpen, Trophy, Activity, User, LogOut } from 'lucide-react';
+import { Camera, BookOpen, Trophy, Activity, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { useGameState } from '../hooks/useGameState';
+import { useGameFeedback } from '../hooks/useGameFeedback';
 import CaptureScreen from './CaptureScreen';
 import JournalScreen from './JournalScreen';
 import LeaderboardScreen from './LeaderboardScreen';
@@ -10,11 +11,10 @@ import FeedScreen from './FeedScreen';
 import ProfileScreen from './ProfileScreen';
 
 const GameDashboard = () => {
-  const [activeTab, setActiveTab] = useState('snap');
+  const [activeTab, setActiveTab] = useState('ranks'); // Default to achievements/ranks
   const navigate = useNavigate();
-  
-  // GameState is now async / tied to Supabase
   const gameState = useGameState();
+  const { feedbackClick } = useGameFeedback();
 
   // Protect route
   useEffect(() => {
@@ -28,13 +28,26 @@ const GameDashboard = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
+    feedbackClick();
     await supabase.auth.signOut();
     navigate('/');
   };
 
+  const handleTabChange = (tabId) => {
+    if (activeTab !== tabId) {
+      feedbackClick();
+      setActiveTab(tabId);
+    }
+  };
+
   const renderTab = () => {
     if (gameState.loading) {
-       return <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>Loading Game Data...</div>;
+       return (
+         <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
+           <div className="spinner"></div>
+           <div style={{ fontWeight: 700, color: 'var(--text-muted)' }}>Loading...</div>
+         </div>
+       );
     }
 
     switch (activeTab) {
@@ -43,7 +56,7 @@ const GameDashboard = () => {
       case 'ranks': return <LeaderboardScreen gameState={gameState} />;
       case 'feed': return <FeedScreen gameState={gameState} />;
       case 'profile': return <ProfileScreen gameState={gameState} onLogout={handleLogout} />;
-      default: return <CaptureScreen gameState={gameState} />;
+      default: return <LeaderboardScreen gameState={gameState} />;
     }
   };
 
@@ -57,24 +70,21 @@ const GameDashboard = () => {
 
   return (
     <div className="app-container">
-      <canvas id="particle-canvas" />
-
       <div className="content-area">
         {renderTab()}
       </div>
 
-      <nav className="bottom-nav">
+      <nav className="bottom-dock animate-slide-up">
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
             <div 
               key={item.id} 
-              className={`nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setActiveTab(item.id)}
+              className={`dock-item ${isActive ? 'active' : ''}`}
+              onClick={() => handleTabChange(item.id)}
             >
-              <Icon size={24} />
-              <span>{item.label}</span>
+              <Icon size={isActive ? 24 : 28} strokeWidth={isActive ? 3 : 2} />
             </div>
           );
         })}
