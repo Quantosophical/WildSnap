@@ -74,7 +74,7 @@ const GameDashboard = () => {
         {renderTab()}
       </div>
 
-      <nav className="bottom-dock animate-slide-up">
+      <nav className="bottom-dock">
         {navItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
