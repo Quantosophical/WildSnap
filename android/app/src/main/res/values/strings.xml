@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">WildSnap</string>
+    <string name="title_activity_main">WildSnap</string>
+    <string name="package_name">com.wildsnap.app</string>
+    <string name="custom_url_scheme">com.wildsnap.app</string>
+</resources>
