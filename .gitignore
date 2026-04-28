@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Build tools (local, not to be committed)
+jdk-17/
+jdk-17.zip
+jdk-21.0.6+7/
+jdk-21.zip
+build_apk.ps1
