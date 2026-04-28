@@ -1,7 +1,5 @@
 import { useCallback } from 'react';
 
-// Short, clean base64 wav for a UI tick/click
-const TICK_SOUND = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="; // Empty placeholder, will synthesize to ensure it works cross-browser without giant strings
 
 // Instead of huge base64, we synthesize a clean tick and chime using Web Audio API
 // This sounds exactly like a high-quality external UI asset but loads instantly.

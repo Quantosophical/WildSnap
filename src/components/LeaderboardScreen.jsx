@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Crown, Flame, ArrowUp, Medal } from 'lucide-react';
+import { Crown, Flame, Medal } from 'lucide-react';
 import { supabase } from '../utils/supabase';
 
 const LeaderboardScreen = ({ gameState }) => {

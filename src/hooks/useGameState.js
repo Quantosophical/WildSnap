@@ -39,17 +39,39 @@ export const useGameState = () => {
           .order('created_at', { ascending: false });
 
         if (captureData) {
+          // Mock fallback locations for older captures without GPS
+          const mockLocations = [
+            { lat: -1.286389, lng: 36.817223, name: 'Nairobi, Kenya' },
+            { lat: -3.465305, lng: -62.215881, name: 'Amazon Basin, Brazil' },
+            { lat: 44.427963, lng: -110.588455, name: 'Yellowstone, USA' },
+            { lat: 0.961883, lng: 114.555973, name: 'Borneo, Indonesia' },
+            { lat: 57.120000, lng: -4.710000, name: 'Scottish Highlands, UK' },
+            { lat: -2.333333, lng: 34.833333, name: 'Serengeti, Tanzania' },
+            { lat: -25.274398, lng: 133.775136, name: 'Outback, Australia' }
+          ];
+
           // Map to match old state format
-          const mappedCaptures = captureData.map(c => ({
-            id: c.id,
-            animal: c.animal_name,
-            species: c.species,
-            rarity: c.rarity,
-            points: c.points_awarded,
-            date: new Date(c.created_at).getTime(),
-            image: c.image_url,
-            fun_fact: c.fun_fact
-          }));
+          const mappedCaptures = captureData.map((c, idx) => {
+            const fallbackLoc = mockLocations[idx % mockLocations.length];
+            return {
+              id: c.id,
+              animal: c.animal_name,
+              species: c.species,
+              rarity: c.rarity,
+              points: c.points_awarded,
+              date: new Date(c.created_at).getTime(),
+              image: c.image_url,
+              fun_fact: c.fun_fact,
+              lat: c.lat !== null && c.lat !== undefined ? c.lat : fallbackLoc.lat,
+              lng: c.lng !== null && c.lng !== undefined ? c.lng : fallbackLoc.lng,
+              location_name: c.location_name || fallbackLoc.name,
+              stats: {
+                speed: c.stat_speed || Math.floor(Math.random() * 100),
+                stealth: c.stat_stealth || Math.floor(Math.random() * 100),
+                aggression: c.stat_aggression || Math.floor(Math.random() * 100)
+              }
+            };
+          });
           setCaptures(mappedCaptures);
         }
       }
@@ -79,7 +101,13 @@ export const useGameState = () => {
         rarity: captureData.rarity,
         points_awarded: finalPoints,
         fun_fact: captureData.fun_fact,
-        image_url: captureData.image
+        image_url: captureData.image,
+        stat_speed: captureData.stat_speed || Math.floor(Math.random() * 100),
+        stat_stealth: captureData.stat_stealth || Math.floor(Math.random() * 100),
+        stat_aggression: captureData.stat_aggression || Math.floor(Math.random() * 100),
+        lat: captureData.lat || null,
+        lng: captureData.lng || null,
+        location_name: captureData.location_name || 'Location Unknown'
       }])
       .select()
       .single();
@@ -97,7 +125,15 @@ export const useGameState = () => {
       points: insertedCapture.points_awarded,
       date: new Date(insertedCapture.created_at).getTime(),
       image: insertedCapture.image_url,
-      fun_fact: insertedCapture.fun_fact
+      fun_fact: insertedCapture.fun_fact,
+      lat: insertedCapture.lat,
+      lng: insertedCapture.lng,
+      location_name: insertedCapture.location_name,
+      stats: {
+        speed: insertedCapture.stat_speed,
+        stealth: insertedCapture.stat_stealth,
+        aggression: insertedCapture.stat_aggression
+      }
     };
 
     setCaptures([newCapture, ...captures]);

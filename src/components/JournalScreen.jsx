@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Filter, ChevronRight, Calendar, MapPin } from 'lucide-react';
 
-const JournalScreen = ({ gameState }) => {
+const JournalScreen = ({ gameState, onJumpToMap }) => {
   const [filter, setFilter] = useState('ALL');
   const [expandedId, setExpandedId] = useState(null);
 
@@ -57,12 +57,22 @@ const JournalScreen = ({ gameState }) => {
           if (isExpanded) {
             return (
               <div key={capture.id} className={`glass-panel border-${capture.rarity.toLowerCase()} animate-fade-in`} style={{ gridColumn: '1 / -1', padding: '20px', position: 'relative' }}>
-                <button 
-                  onClick={() => setExpandedId(null)}
-                  style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', padding: '4px', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <ChevronRight size={20} style={{ transform: 'rotate(-90deg)' }} />
-                </button>
+                <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', gap: '8px' }}>
+                  {capture.lat !== undefined && (
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); onJumpToMap(capture.lat, capture.lng); }}
+                      style={{ background: 'rgba(59, 130, 246, 0.2)', borderRadius: '50%', padding: '6px', border: '1px solid rgba(59, 130, 246, 0.5)', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      <MapPin size={18} />
+                    </button>
+                  )}
+                  <button 
+                    onClick={() => setExpandedId(null)}
+                    style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '50%', padding: '4px', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <ChevronRight size={20} style={{ transform: 'rotate(-90deg)' }} />
+                  </button>
+                </div>
                 
                 <div style={{ display: 'flex', gap: '16px' }}>
                   <div style={{ width: '88px', height: '88px', borderRadius: '16px', border: `2px solid ${rarityColor}`, overflow: 'hidden', flexShrink: 0, background: 'rgba(0,0,0,0.2)' }}>
@@ -85,13 +95,39 @@ const JournalScreen = ({ gameState }) => {
                   <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
                     <Calendar size={14} /> {new Date(capture.date).toLocaleDateString()}
                   </div>
-                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    <MapPin size={14} /> Wild
+                  <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <MapPin size={14} style={{ flexShrink: 0 }} /> {capture.location_name || 'Wild'}
                   </div>
                   <div className="heading-md" style={{ color: 'var(--accent-primary)' }}>
                     +{capture.points} XP
                   </div>
                 </div>
+                
+                {capture.stats && (
+                  <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ width: '80px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>SPEED</span>
+                      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${capture.stats.speed || 0}%`, height: '100%', background: '#3b82f6' }} />
+                      </div>
+                      <span style={{ width: '24px', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{capture.stats.speed || 0}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ width: '80px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>STEALTH</span>
+                      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${capture.stats.stealth || 0}%`, height: '100%', background: '#8b5cf6' }} />
+                      </div>
+                      <span style={{ width: '24px', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{capture.stats.stealth || 0}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ width: '80px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>AGGRESSION</span>
+                      <div style={{ flex: 1, height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${capture.stats.aggression || 0}%`, height: '100%', background: '#ef4444' }} />
+                      </div>
+                      <span style={{ width: '24px', fontSize: '0.75rem', fontWeight: 700, textAlign: 'right' }}>{capture.stats.aggression || 0}</span>
+                    </div>
+                  </div>
+                )}
                 
                 {capture.fun_fact && (
                   <p className="text-sm text-muted" style={{ marginTop: '16px', lineHeight: 1.6, padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: '12px' }}>

@@ -18,6 +18,16 @@ const ProfileScreen = ({ gameState, onLogout }) => {
     return (tierValue[current.rarity] > tierValue[prev?.rarity || 'Common']) ? current : prev;
   }, gameState.captures[0] || null);
 
+  // Location Stats
+  const uniqueLocations = new Set(gameState.captures.filter(c => c.location_name).map(c => c.location_name)).size;
+  const locationCounts = gameState.captures.reduce((acc, curr) => {
+    if (curr.location_name) {
+      acc[curr.location_name] = (acc[curr.location_name] || 0) + 1;
+    }
+    return acc;
+  }, {});
+  const hottestZone = Object.entries(locationCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Unknown';
+
   const achievements = [
     { id: 1, name: 'FIRST CATCH', icon: <Camera />, earned: totalCaptures > 0, color: 'var(--accent-primary)' },
     { id: 2, name: 'RARE HUNTER', icon: <Star />, earned: !!rarityCounts['Rare'], color: 'var(--rarity-rare)' },
@@ -94,6 +104,19 @@ const ProfileScreen = ({ gameState, onLogout }) => {
           <div className="text-xs text-muted" style={{ fontWeight: 600, letterSpacing: '0.05em', marginBottom: '8px' }}>CURRENT STREAK</div>
           <div className="heading-xl" style={{ color: 'var(--rarity-epic)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <Flame size={28} strokeWidth={2.5} /> {gameState.streak}
+          </div>
+        </div>
+        <div className="glass-panel" style={{ padding: '20px', textAlign: 'center', gridColumn: '1 / -1' }}>
+          <div className="text-xs text-muted" style={{ fontWeight: 600, letterSpacing: '0.05em', marginBottom: '8px' }}>EXPLORATION</div>
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '12px' }}>
+            <div>
+              <div className="heading-md" style={{ color: '#3b82f6' }}>{uniqueLocations}</div>
+              <div className="text-xs text-muted">REGIONS</div>
+            </div>
+            <div>
+              <div className="heading-md" style={{ color: '#ef4444', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{hottestZone.split(',')[0]}</div>
+              <div className="text-xs text-muted">HOTTEST ZONE</div>
+            </div>
           </div>
         </div>
       </div>

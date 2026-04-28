@@ -6,6 +6,21 @@ const FeedScreen = ({ gameState }) => {
   const [feed, setFeed] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const getTimeAgo = (date) => {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + "y ago";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + "mo ago";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + "d ago";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + "h ago";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + "m ago";
+    return "Just now";
+  };
+
   useEffect(() => {
     const fetchFeed = async () => {
       setLoading(true);
@@ -43,7 +58,7 @@ const FeedScreen = ({ gameState }) => {
 
     // Setup Realtime subscription
     const channel = supabase.channel('feed_updates')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'captures' }, payload => {
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'captures' }, () => {
         fetchFeed();
       })
       .subscribe();
@@ -53,20 +68,6 @@ const FeedScreen = ({ gameState }) => {
     };
   }, []);
 
-  const getTimeAgo = (date) => {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    let interval = seconds / 31536000;
-    if (interval > 1) return Math.floor(interval) + "y ago";
-    interval = seconds / 2592000;
-    if (interval > 1) return Math.floor(interval) + "mo ago";
-    interval = seconds / 86400;
-    if (interval > 1) return Math.floor(interval) + "d ago";
-    interval = seconds / 3600;
-    if (interval > 1) return Math.floor(interval) + "h ago";
-    interval = seconds / 60;
-    if (interval > 1) return Math.floor(interval) + "m ago";
-    return "Just now";
-  };
 
   return (
     <div className="content-area" style={{ padding: '24px' }}>

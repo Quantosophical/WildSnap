@@ -61,6 +61,28 @@ const CaptureScreen = ({ gameState }) => {
     return publicUrlData.publicUrl;
   };
 
+  const fetchLocation = async () => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve({ lat: null, lng: null, location_name: 'Location Unknown' });
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
+          const data = await res.json();
+          const name = data.address?.city || data.address?.town || data.address?.suburb || data.address?.county || 'Unknown Area';
+          resolve({ lat: latitude, lng: longitude, location_name: name });
+        } catch (e) {
+          resolve({ lat: latitude, lng: longitude, location_name: 'Unknown Area' });
+        }
+      }, () => {
+        resolve({ lat: null, lng: null, location_name: 'Location Unknown' });
+      }, { timeout: 10000 });
+    });
+  };
+
   const handleCapture = async () => {
     if (!videoRef.current || isScanning) return;
     
@@ -83,14 +105,27 @@ const CaptureScreen = ({ gameState }) => {
     try {
       const data = await identifyAnimal(base64Image);
       
-      if (data.detected) {
-        if (data.zoo_detected) {
-          setIsScanning(false);
-          triggerHaptic('heavy');
-          setError(`ZOO DETECTED: ${data.zoo_reason}. Captive animals do not count.`);
-          return;
-        } 
-        
+      if (!data.is_animal) {
+        setIsScanning(false);
+        triggerHaptic('heavy');
+        setError("NOT AN ANIMAL 🚫 — Only wildlife counts");
+      } else if (data.screen_detected) {
+        setIsScanning(false);
+        triggerHaptic('heavy');
+        setError("SCREEN DETECTED 🖥️ — Capture real animals only");
+      } else if (data.zoo_detected) {
+        setIsScanning(false);
+        triggerHaptic('heavy');
+        setError(`ZOO DETECTED 🏛️ — ${data.zoo_reason || 'Captive animals do not count.'}`);
+      } else if (data.confidence < 40) {
+        setIsScanning(false);
+        triggerHaptic('heavy');
+        setError("TOO UNCLEAR 🌫️ — Get closer");
+      } else if (!data.detected) {
+        setIsScanning(false);
+        triggerHaptic('heavy');
+        setError("NOTHING CAPTURED 🔍");
+      } else {
         // --- NEW LOGIC: Prevent duplicate species ---
         const alreadyCaptured = gameState.captures.some(
           c => c.species.toLowerCase() === data.species.toLowerCase()
@@ -105,13 +140,9 @@ const CaptureScreen = ({ gameState }) => {
 
         // Proceed if new species
         const imageUrl = await uploadImage(base64Image);
+        const loc = await fetchLocation();
         setIsScanning(false);
-        handleSuccess(data, imageUrl);
-        
-      } else {
-        setIsScanning(false);
-        triggerHaptic('heavy');
-        setError("No animal detected. Get closer and ensure good lighting.");
+        handleSuccess({ ...data, ...loc }, imageUrl);
       }
     } catch (err) {
       setIsScanning(false);

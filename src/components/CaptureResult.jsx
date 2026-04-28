@@ -78,8 +78,13 @@ const CaptureResult = ({ result, onClose }) => {
         <h2 style={{ fontSize: '2.5rem', textAlign: 'center', lineHeight: 1.1, marginBottom: 4, color: 'var(--text-main)', fontWeight: 900 }}>
           {result.animal.toUpperCase()}
         </h2>
-        <div style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginBottom: 24, fontWeight: 500 }}>
+        <div style={{ fontStyle: 'italic', color: 'var(--text-muted)', marginBottom: 16, fontWeight: 500 }}>
           {result.species}
+        </div>
+
+        {/* Location Badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.05)', padding: '6px 12px', borderRadius: '16px', marginBottom: 24, fontSize: '0.8rem', color: 'var(--text-main)', border: '1px solid rgba(255,255,255,0.1)' }}>
+          📍 Logged at {result.location_name || 'Unknown Location'}
         </div>
 
         {/* Image/Avatar */}
