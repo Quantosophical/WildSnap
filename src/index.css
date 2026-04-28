@@ -183,18 +183,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Bottom Nav - Radically Different (Floating Dock) */
 .bottom-dock {
-  position: absolute;
-  bottom: 24px;
+  position: fixed;
+  bottom: calc(24px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
   z-index: 1000;
   background: rgba(255, 255, 255, 0.95);
-  padding: 12px 24px;
+  padding: 8px 16px;
   border-radius: 40px;
   box-shadow: 0 12px 32px rgba(0,0,0,0.1);
   backdrop-filter: blur(10px);
+  width: max-content;
+  max-width: 90vw;
+  box-sizing: border-box;
 }
 
 .dock-item {
