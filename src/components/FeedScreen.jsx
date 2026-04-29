@@ -70,13 +70,7 @@ const FeedScreen = ({ gameState }) => {
 
 
   return (
-    <div className="content-area" style={{ padding: '24px' }}>
-      <div style={{ marginBottom: '32px' }}>
-        <h1 className="heading-xl text-gradient">ACTIVITY</h1>
-        <div className="text-sm text-muted" style={{ fontWeight: 500, marginTop: '4px' }}>LIVE NETWORK UPDATES</div>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {loading && feed.length === 0 ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
             <div className="spinner" />
@@ -118,7 +112,6 @@ const FeedScreen = ({ gameState }) => {
           })
         )}
       </div>
-    </div>
   );
 };
 

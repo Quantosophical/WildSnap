@@ -36,8 +36,22 @@ no backticks — with exactly these fields:
   "points_base": number,
   "stat_speed": "number 1-100 representing physical speed/agility",
   "stat_stealth": "number 1-100 representing camouflage/stealth ability",
-  "stat_aggression": "number 1-100 representing fighting/predatory aggression"
+  "stat_aggression": "number 1-100 representing fighting/predatory aggression",
+  "behavior": "hunting|feeding|sleeping|playing|fighting|mating_display|grooming|migrating|parenting|alert|swimming|flying|resting|unknown",
+  "behavior_rarity": "Common|Uncommon|Rare",
+  "behavior_description": "one sentence describing exactly what the animal appears to be doing",
+  "behavior_multiplier": number
 }
+
+BEHAVIOR MULTIPLIER RULES:
+- Resting/unknown = 1.0
+- Feeding/alert/swimming/flying = 1.2
+- Grooming/playing = 1.5  
+- Hunting/migrating/fighting = 2.0
+- Parenting/mating_display = 2.5
+- Combinations = 3.0
+
+Rare behaviors should only be confirmed if clearly visible.
 
 DETECTION RULES — follow these strictly:
 

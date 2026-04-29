@@ -61,24 +61,41 @@ const CaptureScreen = ({ gameState }) => {
     return publicUrlData.publicUrl;
   };
 
-  const fetchLocation = async () => {
+  const fetchLocationData = async () => {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        resolve({ lat: null, lng: null, location_name: 'Location Unknown' });
+        resolve({ lat: null, lng: null, location_name: 'Location Unknown', city_region: 'Unknown Region', weatherData: null });
         return;
       }
       navigator.geolocation.getCurrentPosition(async (pos) => {
         const { latitude, longitude } = pos.coords;
+        let location_name = 'Unknown Area';
+        let city_region = 'Unknown Region';
+        let weatherData = null;
+
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`);
           const data = await res.json();
-          const name = data.address?.city || data.address?.town || data.address?.suburb || data.address?.county || 'Unknown Area';
-          resolve({ lat: latitude, lng: longitude, location_name: name });
+          location_name = data.address?.city || data.address?.town || data.address?.suburb || data.address?.county || 'Unknown Area';
+          city_region = data.address?.city || data.address?.state || data.address?.region || data.address?.country || 'Unknown Region';
         } catch (e) {
-          resolve({ lat: latitude, lng: longitude, location_name: 'Unknown Area' });
+          console.error("Nominatim error", e);
         }
+
+        try {
+           const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=weathercode,temperature_2m,precipitation&timezone=auto`);
+           const wData = await weatherRes.json();
+           weatherData = {
+              weatherCode: wData.current?.weathercode,
+              temp: wData.current?.temperature_2m
+           };
+        } catch(e) {
+           console.error("Open-Meteo error", e);
+        }
+
+        resolve({ lat: latitude, lng: longitude, location_name, city_region, weatherData });
       }, () => {
-        resolve({ lat: null, lng: null, location_name: 'Location Unknown' });
+        resolve({ lat: null, lng: null, location_name: 'Location Unknown', city_region: 'Unknown Region', weatherData: null });
       }, { timeout: 10000 });
     });
   };
@@ -140,9 +157,9 @@ const CaptureScreen = ({ gameState }) => {
 
         // Proceed if new species
         const imageUrl = await uploadImage(base64Image);
-        const loc = await fetchLocation();
+        const { weatherData, ...loc } = await fetchLocationData();
         setIsScanning(false);
-        handleSuccess({ ...data, ...loc }, imageUrl);
+        handleSuccess({ ...data, ...loc }, imageUrl, weatherData);
       }
     } catch (err) {
       setIsScanning(false);
@@ -150,13 +167,13 @@ const CaptureScreen = ({ gameState }) => {
     }
   };
 
-  const handleSuccess = async (data, imageUrl) => {
+  const handleSuccess = async (data, imageUrl, weatherData) => {
     triggerParticleBurst(window.innerWidth / 2, window.innerHeight / 2, data.rarity);
     
     const finalCaptureData = await gameState.addCapture({
       ...data,
       image: imageUrl
-    });
+    }, weatherData);
     
     setResult(finalCaptureData);
   };

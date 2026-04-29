@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { Filter, ChevronRight, Calendar, MapPin } from 'lucide-react';
+import { Filter, ChevronRight, Calendar, MapPin, BookOpen, Trophy } from 'lucide-react';
+import EncyclopediaModal from './EncyclopediaModal';
+import { getMasteryLevel } from '../hooks/useGameState';
 
 const JournalScreen = ({ gameState, onJumpToMap }) => {
   const [filter, setFilter] = useState('ALL');
   const [expandedId, setExpandedId] = useState(null);
+  const [encyclopediaAnimal, setEncyclopediaAnimal] = useState(null);
 
   const filters = ['ALL', 'COMMON', 'UNCOMMON', 'RARE', 'EPIC', 'LEGENDARY'];
   
@@ -13,15 +16,15 @@ const JournalScreen = ({ gameState, onJumpToMap }) => {
 
   // Group by species to count unique
   const uniqueSpecies = new Set(gameState.captures.map(c => c.species)).size;
-  const totalPossible = 8000; // Fake number of total species
+  const totalPossible = 100; // Updated to 100 as per prompt
 
   return (
     <div className="content-area" style={{ padding: '24px' }}>
       <div style={{ marginBottom: '32px' }}>
         <h1 className="heading-xl text-gradient">JOURNAL</h1>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: 'var(--text-muted)', marginTop: '8px' }}>
-          <span className="text-sm" style={{ fontWeight: 600 }}>{uniqueSpecies} / {totalPossible} DISCOVERED</span>
-          <span className="text-sm" style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{(uniqueSpecies/totalPossible*100).toFixed(4)}%</span>
+          <span className="text-sm" style={{ fontWeight: 600 }}>{uniqueSpecies} / {totalPossible} SPECIES DISCOVERED</span>
+          <span className="text-sm" style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>{(uniqueSpecies/totalPossible*100).toFixed(1)}%</span>
         </div>
         <div style={{ height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '3px', marginTop: '12px', overflow: 'hidden' }}>
           <div style={{ height: '100%', width: `${Math.max(1, (uniqueSpecies/totalPossible*100))}%`, background: 'var(--accent-primary)', boxShadow: '0 0 12px rgba(16, 185, 129, 0.6)', borderRadius: '3px', transition: 'width 1s ease' }} />
@@ -55,6 +58,14 @@ const JournalScreen = ({ gameState, onJumpToMap }) => {
           const rarityColor = `var(--rarity-${capture.rarity.toLowerCase()})`;
           
           if (isExpanded) {
+            const masteryCount = gameState.mastery[capture.species] || 1;
+            const mastery = getMasteryLevel(masteryCount);
+            let nextTarget = 3;
+            if (masteryCount >= 3) nextTarget = 5;
+            if (masteryCount >= 5) nextTarget = 10;
+            if (masteryCount >= 10) nextTarget = 25;
+            if (masteryCount >= 25) nextTarget = 25;
+
             return (
               <div key={capture.id} className={`glass-panel border-${capture.rarity.toLowerCase()} animate-fade-in`} style={{ gridColumn: '1 / -1', padding: '20px', position: 'relative' }}>
                 <div style={{ position: 'absolute', top: '16px', right: '16px', display: 'flex', gap: '8px' }}>
@@ -89,6 +100,27 @@ const JournalScreen = ({ gameState, onJumpToMap }) => {
                     <h3 className="heading-md" style={{ marginBottom: '2px' }}>{capture.animal}</h3>
                     <div className="text-sm text-muted" style={{ fontStyle: 'italic' }}>{capture.species}</div>
                   </div>
+                </div>
+
+                <button onClick={() => setEncyclopediaAnimal(capture)} className="btn-3d btn-pill" style={{ width: '100%', marginTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '12px' }}>
+                   <BookOpen size={16} /> ENCYCLOPEDIA ENTRY
+                </button>
+
+                {/* Mastery Progress */}
+                <div style={{ marginTop: '20px', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                         <Trophy size={14} color="var(--rarity-epic)" />
+                         <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--text-muted)' }}>ANIMAL MASTERY</span>
+                      </div>
+                      <div style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--rarity-epic)' }}>{mastery.name} {mastery.badge}</div>
+                   </div>
+                   <div style={{ height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${Math.min(100, (masteryCount / nextTarget) * 100)}%`, background: 'var(--rarity-epic)' }} />
+                   </div>
+                   <div className="text-xs text-muted" style={{ marginTop: '8px', textAlign: 'right' }}>
+                      {masteryCount} / {nextTarget} to next level
+                   </div>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
@@ -167,6 +199,10 @@ const JournalScreen = ({ gameState, onJumpToMap }) => {
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text-muted)', background: 'var(--bg-glass)', borderRadius: '24px', marginTop: '20px' }}>
           No captures found for this rarity.
         </div>
+      )}
+
+      {encyclopediaAnimal && (
+         <EncyclopediaModal animal={encyclopediaAnimal} captures={gameState.captures} onClose={() => setEncyclopediaAnimal(null)} />
       )}
     </div>
   );

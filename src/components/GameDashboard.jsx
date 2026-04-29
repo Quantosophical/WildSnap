@@ -64,9 +64,7 @@ const GameDashboard = () => {
       case 'snap': return <CaptureScreen gameState={gameState} />;
       case 'journal': return <JournalScreen gameState={gameState} onJumpToMap={handleJumpToMap} />;
       case 'map': return <WildMapScreen gameState={gameState} mapTarget={mapTarget} setMapTarget={setMapTarget} />;
-      case 'arena': return <ArenaScreen gameState={gameState} />;
       case 'ranks': return <LeaderboardScreen gameState={gameState} />;
-      case 'feed': return <FeedScreen gameState={gameState} />;
       case 'profile': return <ProfileScreen gameState={gameState} onLogout={handleLogout} />;
       default: return <LeaderboardScreen gameState={gameState} />;
     }
@@ -75,10 +73,8 @@ const GameDashboard = () => {
   const navItems = [
     { id: 'snap', label: 'SNAP', icon: Camera },
     { id: 'journal', label: 'JOURNAL', icon: BookOpen },
-    { id: 'map', label: 'WILDMAP', icon: Map },
-    { id: 'arena', label: 'ARENA', icon: Swords },
+    { id: 'map', label: 'MAP', icon: Map },
     { id: 'ranks', label: 'RANKS', icon: Trophy },
-    { id: 'feed', label: 'FEED', icon: Activity },
     { id: 'profile', label: 'PROFILE', icon: User }
   ];
 

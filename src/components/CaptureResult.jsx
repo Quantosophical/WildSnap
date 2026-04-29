@@ -103,18 +103,43 @@ const CaptureResult = ({ result, onClose }) => {
           )}
         </div>
 
+        {/* Behavior Badge */}
+        {result.behavior && result.behavior !== 'unknown' && result.behavior !== 'resting' && (
+           <div className="animate-pop-in" style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(234, 179, 8, 0.1)', border: '1px solid var(--rarity-epic)', padding: '8px 16px', borderRadius: '20px', marginBottom: 24, color: 'var(--rarity-epic)', fontWeight: 800 }}>
+             🔥 {result.behavior.toUpperCase().replace('_', ' ')} · {result.behavior_multiplier}x BONUS
+           </div>
+        )}
+
         {/* Stats Grid */}
-        <div style={{ display: 'flex', gap: 12, width: '100%', marginBottom: 32 }}>
-          <div style={{ flex: 1, padding: '16px', textAlign: 'center', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: 1 }}>BASE XP</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: rarityColor }}>+{result.points_base}</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', marginBottom: 32 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
+             <span style={{ color: 'var(--text-muted)', fontWeight: 800 }}>BASE XP</span>
+             <span style={{ fontWeight: 900, color: rarityColor }}>{Math.floor((result.points / (result.isFirstOfSpecies ? 2 : 1) / (result.behavior_multiplier || 1) / (result.weather_bonus || 1)))}</span>
           </div>
-          <div style={{ flex: 1, padding: '16px', textAlign: 'center', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: 1 }}>BONUS</div>
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--accent-primary)' }}>
-              {result.isFirstOfSpecies ? 'x2 FIRST!' : 'NONE'}
+          
+          {(result.isFirstOfSpecies || result.behavior_multiplier > 1 || result.weather_bonus > 1) && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '16px', background: 'var(--bg-deep)', borderRadius: '20px', border: '1px solid rgba(0,0,0,0.05)' }}>
+              <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 800, letterSpacing: 1, marginBottom: '4px' }}>MULTIPLIERS</div>
+              {result.isFirstOfSpecies && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600 }}>First Discovery</span>
+                  <span style={{ fontWeight: 900, color: 'var(--accent-primary)' }}>2.0x</span>
+                </div>
+              )}
+              {result.behavior_multiplier > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600 }}>Behavior ({result.behavior})</span>
+                  <span style={{ fontWeight: 900, color: 'var(--rarity-epic)' }}>{result.behavior_multiplier}x</span>
+                </div>
+              )}
+              {result.weather_bonus > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontWeight: 600 }}>Weather Bonus</span>
+                  <span style={{ fontWeight: 900, color: '#3b82f6' }}>{result.weather_bonus}x</span>
+                </div>
+              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Total Points Awarded */}
