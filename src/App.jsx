@@ -7,7 +7,9 @@ import AppSetup from './components/AppSetup';
 
 // Check if setup is needed
 const isSetupComplete = () => {
-  return localStorage.getItem('SUPABASE_URL') && localStorage.getItem('SUPABASE_ANON_KEY') && localStorage.getItem('NIM_API_KEY');
+  const hasUrl = localStorage.getItem('SUPABASE_URL') || import.meta.env.VITE_SUPABASE_URL;
+  const hasKey = localStorage.getItem('SUPABASE_ANON_KEY') || import.meta.env.VITE_SUPABASE_ANON_KEY;
+  return hasUrl && hasKey;
 };
 
 const ProtectedRoute = ({ children }) => {
