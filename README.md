@@ -29,11 +29,12 @@ Welcome to **WildSnap**, a real-world wildlife exploration game built as a Progr
 *   **Field Ranks:** Level up from "Novice Tracker" to "Global Legend."
 *   **Streaks & Shields:** Play daily to build your streak multiplier. Earn "Streak Shields" to protect your progress if you miss a day.
 
-### 🌍 Social: Clans, Bounties & Expeditions
-*   **Research Clans:** Join one of three global factions (The Canopy Syndicate, Deep Blue Vanguard, or Crimson Horizon) and compete on clan-specific leaderboards.
-*   **Server-Wide Expeditions:** Participate in global, community-driven goals (e.g., "Document 5,000 birds as a server this week") to unlock exclusive rewards.
-*   **Daily Bounties:** Receive personalized daily targets to hunt specific animals in specific regions.
-*   **Live Field Notes Feed:** A real-time scrolling feed of every discovery made by players around the world.
+### 🌍 Deep Social System: Clans, Friends & Wars
+*   **Friends Network:** Add friends using unique Hunter Codes. Maintain daily Friendship Streaks by capturing animals together and send real-time "Cheers" to celebrate rare finds.
+*   **Advanced Clans:** Forge a clan with custom emblems, tags, and war cries. Collaborate on Clan Missions to unlock shared XP and rewards.
+*   **Real-time Clan Chat:** Strategize with your clan members instantly via a live, persistent chat room built on Supabase Realtime.
+*   **Clan Wars:** Declare war on rival clans! Every capture made during an active 48-hour war adds to your clan's score, with the winner taking home the trophies.
+*   **Dynamic Social Feeds:** Filter your live feed by 'Global' (Epic/Legendary catches only), 'Clan' (your members' catches), or 'Friends' (your friends' catches).
 
 ### 💚 Conservation Impact Tracking
 *   **Endangered Species Focus:** Photographing animals marked as Vulnerable or Endangered grants bonus Conservation Points.

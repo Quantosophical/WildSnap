@@ -25,7 +25,7 @@ const getFieldRank = (level) => {
 const ProfileScreen = ({ gameState, onLogout }) => {
   const { feedbackClick } = useGameFeedback();
   
-  const totalCaptures = gameState.captures.length;
+  const totalCaptures = gameState.userRecord?.total_captures || gameState.captures.length || 0;
   
   const rarityCounts = gameState.captures.reduce((acc, curr) => {
     acc[curr.rarity] = (acc[curr.rarity] || 0) + 1;
@@ -38,7 +38,7 @@ const ProfileScreen = ({ gameState, onLogout }) => {
   const stats = [
     { label: 'TOTAL CAPTURES', value: totalCaptures, color: 'var(--accent-secondary)' },
     { label: 'LONGEST STREAK', value: gameState.maxStreak || gameState.streak, color: 'var(--rarity-epic)', icon: <Flame size={20} /> },
-    { label: 'CONSERVATION XP', value: gameState.conservationPoints || 0, color: 'var(--rarity-rare)', icon: <Leaf size={20} /> }
+    { label: 'CONSERVATION XP', value: gameState.totalPoints || 0, color: 'var(--rarity-rare)', icon: <Leaf size={20} /> }
   ];
 
   // Masteries
@@ -55,7 +55,7 @@ const ProfileScreen = ({ gameState, onLogout }) => {
      try {
         const { generateImpactReport } = await import('../utils/api');
         const rareCaptures = gameState.captures.filter(c => ['Rare', 'Epic', 'Legendary'].includes(c.rarity)).map(c => c.species).join(', ');
-        const text = await generateImpactReport(`User has ${gameState.conservationPoints} conservation points and captured: ${rareCaptures}`);
+        const text = await generateImpactReport(`User has ${gameState.totalPoints || 0} conservation points and captured: ${rareCaptures}`);
         setReport(text);
      } catch (e) {
         setReport("Failed to generate report. Please try again later.");
@@ -137,7 +137,7 @@ const ProfileScreen = ({ gameState, onLogout }) => {
             <h3 className="heading-md" style={{ color: 'var(--text-main)' }}>Conservation Impact</h3>
          </div>
          <p className="text-sm text-muted" style={{ lineHeight: 1.6, marginBottom: '16px' }}>
-            Your field work has actively contributed to global wildlife monitoring. You've documented <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>{gameState.conservationPoints}</span> endangered species sightings.
+            Your field work has actively contributed to global wildlife monitoring. You've documented <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>{gameState.totalPoints || 0}</span> endangered species sightings.
          </p>
          
          {report ? (

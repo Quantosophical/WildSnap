@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, BookOpen, Trophy, Activity, User, Swords, Map } from 'lucide-react';
+import { Camera, BookOpen, Trophy, User, Shield, Users, Map } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { useGameState } from '../hooks/useGameState';
@@ -9,17 +9,17 @@ import JournalScreen from './JournalScreen';
 import LeaderboardScreen from './LeaderboardScreen';
 import FeedScreen from './FeedScreen';
 import ProfileScreen from './ProfileScreen';
-import ArenaScreen from './ArenaScreen';
+import ClanScreen from './ClanScreen';
+import FriendsScreen from './FriendsScreen';
 import WildMapScreen from './WildMapScreen';
 
 const GameDashboard = () => {
-  const [activeTab, setActiveTab] = useState('ranks'); // Default to achievements/ranks
+  const [activeTab, setActiveTab] = useState('ranks'); 
   const [mapTarget, setMapTarget] = useState(null);
   const navigate = useNavigate();
   const gameState = useGameState();
   const { feedbackClick } = useGameFeedback();
 
-  // Protect route
   useEffect(() => {
     const checkUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -40,7 +40,7 @@ const GameDashboard = () => {
     if (activeTab !== tabId) {
       feedbackClick();
       setActiveTab(tabId);
-      if (tabId !== 'map') setMapTarget(null); // Clear map target when navigating away
+      if (tabId !== 'map') setMapTarget(null);
     }
   };
 
@@ -65,6 +65,8 @@ const GameDashboard = () => {
       case 'journal': return <JournalScreen gameState={gameState} onJumpToMap={handleJumpToMap} />;
       case 'map': return <WildMapScreen gameState={gameState} mapTarget={mapTarget} setMapTarget={setMapTarget} />;
       case 'ranks': return <LeaderboardScreen gameState={gameState} />;
+      case 'friends': return <FriendsScreen gameState={gameState} />;
+      case 'clan': return <ClanScreen gameState={gameState} />;
       case 'profile': return <ProfileScreen gameState={gameState} onLogout={handleLogout} />;
       default: return <LeaderboardScreen gameState={gameState} />;
     }
@@ -73,8 +75,8 @@ const GameDashboard = () => {
   const navItems = [
     { id: 'snap', label: 'SNAP', icon: Camera },
     { id: 'journal', label: 'JOURNAL', icon: BookOpen },
-    { id: 'map', label: 'MAP', icon: Map },
-    { id: 'ranks', label: 'RANKS', icon: Trophy },
+    { id: 'friends', label: 'FRIENDS', icon: Users },
+    { id: 'clan', label: 'CLAN', icon: Shield },
     { id: 'profile', label: 'PROFILE', icon: User }
   ];
 

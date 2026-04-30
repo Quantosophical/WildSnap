@@ -4,6 +4,12 @@ import { supabase } from '../utils/supabase';
 import { AlertTriangle, Loader2, Upload, ChevronLeft } from 'lucide-react';
 import { useGameFeedback } from '../hooks/useGameFeedback';
 
+const generateFriendCode = (username) => {
+  const prefix = username.slice(0, 4).toUpperCase();
+  const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `${prefix}-${suffix}`;
+};
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1);
@@ -69,6 +75,17 @@ const Auth = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Authentication failed. Please try again.");
 
+      // Check username uniqueness
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .eq('username', username.trim())
+        .maybeSingle();
+        
+      if (existingUser) {
+        throw new Error("Username already taken. Please choose another.");
+      }
+
       let avatarUrl = null;
 
       if (avatarFile) {
@@ -87,18 +104,24 @@ const Auth = () => {
         }
       }
 
+      const friendCode = generateFriendCode(username.trim());
+
       const { error: profileError } = await supabase
         .from('users')
         .insert([{ 
           id: session.user.id, 
           username: username.trim(),
+          friend_code: friendCode,
           avatar_url: avatarUrl,
           xp: 0,
           level: 1,
-          streak: 0
+          current_streak: 0,
+          total_captures: 0,
+          total_points: 0
         }]);
         
       if (profileError) {
+         console.error(profileError);
          throw new Error("Failed to create user profile. Please contact support.");
       }
 
